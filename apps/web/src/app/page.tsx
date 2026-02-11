@@ -30,25 +30,24 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-screen overflow-hidden bg-[#080810]">
       {/* Sidebar */}
       <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden">
-        {/* Header */}
-        <header className="h-16 glass-sidebar flex items-center justify-between px-6 border-b border-border/30">
-          <div className="flex items-center gap-4">
-            <div className="w-2 h-2 rounded-full status-active animate-pulse-glow" />
-            <span className="text-sm text-muted-foreground">System Online</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-muted-foreground">
+        {/* Header Bar */}
+        <header className="h-12 flex items-center justify-end px-6 border-b border-border/20">
+          <div className="flex items-center gap-6">
+            <span className="text-xs text-muted-foreground">
               {new Date().toLocaleDateString("en-US", {
-                weekday: "long",
+                weekday: "short",
                 month: "short",
                 day: "numeric",
+                year: "numeric",
               })}
+              {" · "}
+              {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
             <UserButton afterSignOutUrl="/sign-in" />
           </div>
