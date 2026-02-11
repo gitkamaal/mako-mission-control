@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useQuery } from "convex/react";
+import { UserButton } from "@clerk/nextjs";
 import { api } from "../../convex/_generated/api";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -204,7 +205,10 @@ export default function Dashboard() {
               </p>
             </div>
           </div>
-          <ConnectionStatus connected={connected} />
+          <div className="flex items-center gap-4">
+            <ConnectionStatus connected={connected} />
+            <UserButton afterSignOutUrl="/sign-in" />
+          </div>
         </div>
       </header>
 
