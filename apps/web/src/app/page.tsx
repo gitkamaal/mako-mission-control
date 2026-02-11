@@ -10,6 +10,7 @@ import { IntelligenceView } from "@/components/views/intelligence-view";
 import { JournalView } from "@/components/views/journal-view";
 import { DocumentsView } from "@/components/views/documents-view";
 import { CronView } from "@/components/views/cron-view";
+import { ApiUsageView } from "@/components/views/api-usage-view";
 import { SettingsView } from "@/components/views/settings-view";
 
 export default function Dashboard() {
@@ -33,6 +34,8 @@ export default function Dashboard() {
         return <DocumentsView />;
       case "cron":
         return <CronView />;
+      case "api":
+        return <ApiUsageView />;
       case "settings":
         return <SettingsView />;
       default:
