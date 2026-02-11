@@ -363,14 +363,42 @@ sessions: {
 
 4. **How many agents to start with?**
    - Bhanu started with 10 specialized agents
-   - **Recommendation:** Start with 3 (Mako + Scout + Scribe), expand as needed
+   - **Decision:** Start with 6 specialized agents (see below)
+
+---
+
+## Agent Squad (Final)
+
+| Agent | Emoji | Role | Specialty |
+|-------|-------|------|-----------|
+| **Mako** | 🦈 | Lead / Orchestrator | Delegation, architecture decisions, final review |
+| **Scout** | 🔍 | Researcher | Web research, competitive analysis, fact-finding |
+| **Scribe** | ✍️ | Writer | Docs, content, copy, README files |
+| **Pixel** | 🎨 | Frontend Developer | React, UI/UX, Tailwind, components |
+| **Forge** | ⚙️ | Backend Developer | APIs, databases, server logic |
+| **Atlas** | 🏛️ | Architect / Designer | System design, tech decisions, patterns |
+
+**Hierarchy:**
+```
+         🦈 Mako (Lead)
+              │
+    ┌─────────┼─────────┐
+    │         │         │
+🔍 Scout  ✍️ Scribe  🏛️ Atlas
+                         │
+                   ┌─────┴─────┐
+                   │           │
+                🎨 Pixel    ⚙️ Forge
+```
+
+All agents report to Mako. Atlas oversees technical implementation (Pixel + Forge).
 
 ---
 
 ## Next Steps
 
-1. Review this plan
-2. Decide on open questions
+1. ~~Review this plan~~ ✅
+2. ~~Decide on open questions~~ ✅
 3. Set up Convex and Clerk
 4. Build the core dashboard
 5. Wire up Clawdbot Gateway connection
