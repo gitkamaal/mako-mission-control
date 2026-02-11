@@ -16,60 +16,57 @@ export function AgentsView() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div>
+      <div className="flex items-center justify-between mb-8">
         <div>
-          <h2 className="text-2xl font-bold text-gradient">Agent Squad</h2>
-          <p className="text-muted-foreground">Your AI team members</p>
+          <h1 className="text-2xl font-semibold mb-2">Agent Squad</h1>
+          <p className="text-secondary">Your AI team members</p>
         </div>
-        <button className="px-4 py-2 rounded-xl glass glass-hover text-sm font-medium">
+        <button className="btn-primary">
           + Add Agent
         </button>
       </div>
 
-      {/* Agent Grid */}
       {agents === undefined ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="glass-card p-6 animate-pulse h-48" />
+            <div key={i} className="liquid-card p-6 h-48 animate-pulse" />
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {agents.map((agent) => (
-            <div key={agent._id} className="glass-card p-6 hover:glow-blue transition-all duration-300">
-              {/* Header */}
+            <div key={agent._id} className="liquid-card p-6">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-2xl glass flex items-center justify-center text-2xl">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center text-2xl">
                     {agent.emoji}
                   </div>
                   <div>
-                    <h3 className="font-bold text-lg">{agent.name}</h3>
-                    <p className="text-sm text-muted-foreground">{agent.role}</p>
+                    <h3 className="font-semibold">{agent.name}</h3>
+                    <p className="text-sm text-secondary">{agent.role}</p>
                   </div>
                 </div>
-                <div className={`w-3 h-3 rounded-full status-${agent.status}`} />
+                <div className={`status-dot ${
+                  agent.status === "active" ? "status-active" : 
+                  agent.status === "idle" ? "status-idle" : "status-offline"
+                }`} />
               </div>
 
-              {/* Description */}
               {agent.description && (
-                <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                <p className="text-sm text-secondary mb-4 line-clamp-2">
                   {agent.description}
                 </p>
               )}
 
-              {/* Footer */}
-              <div className="flex items-center justify-between text-xs text-muted-foreground pt-4 border-t border-border/30">
-                <span className="capitalize">{agent.status}</span>
-                <span>Last seen: {timeSince(agent.lastHeartbeat)}</span>
+              <div className="flex items-center justify-between text-sm pt-4 border-t border-white/5">
+                <span className="text-secondary capitalize">{agent.status}</span>
+                <span className="text-secondary">{timeSince(agent.lastHeartbeat)}</span>
               </div>
 
-              {/* Reports To */}
               {agent.reportsTo && (
-                <div className="mt-3 px-3 py-1.5 rounded-lg glass text-xs">
-                  Reports to: <span className="font-medium">{agent.reportsTo}</span>
+                <div className="mt-3 text-xs text-secondary">
+                  Reports to: <span className="text-primary">{agent.reportsTo}</span>
                 </div>
               )}
             </div>

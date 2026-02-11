@@ -1,169 +1,148 @@
 @import "tailwindcss";
 
-@theme inline {
-  --color-background: #0a0a12;
-  --color-foreground: #e8eaed;
-  --color-muted: #4a4d56;
-  --color-muted-foreground: #8b8f9a;
-  --color-card: rgba(20, 24, 38, 0.7);
-  --color-card-foreground: #e8eaed;
-  --color-border: rgba(60, 70, 100, 0.3);
-  --color-input: rgba(30, 35, 55, 0.6);
-  --color-ring: #5b7ff5;
-  --color-primary: #5b7ff5;
-  --color-primary-foreground: #0a0a12;
-  --color-secondary: rgba(40, 50, 80, 0.5);
-  --color-secondary-foreground: #e8eaed;
-  --color-accent: #7c5bf5;
-  --color-destructive: #f55b5b;
-  --radius-sm: 0.5rem;
-  --radius-md: 0.75rem;
-  --radius-lg: 1rem;
-  --radius-xl: 1.25rem;
+/* Apple Liquid Glass Design System */
+:root {
+  --glass-bg: rgba(255, 255, 255, 0.08);
+  --glass-bg-hover: rgba(255, 255, 255, 0.12);
+  --glass-bg-active: rgba(255, 255, 255, 0.16);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-border-light: rgba(255, 255, 255, 0.15);
+  --glass-shadow: rgba(0, 0, 0, 0.2);
+  --text-primary: rgba(255, 255, 255, 0.95);
+  --text-secondary: rgba(255, 255, 255, 0.6);
+  --text-tertiary: rgba(255, 255, 255, 0.4);
+  --accent-blue: #0a84ff;
+  --accent-green: #30d158;
+  --accent-orange: #ff9f0a;
+  --accent-purple: #bf5af2;
 }
 
 * {
-  border-color: var(--color-border);
+  border-color: var(--glass-border);
 }
 
 body {
-  background: linear-gradient(135deg, 
-    #080810 0%, 
-    #0d1020 30%,
-    #101428 60%,
-    #0a0f1a 100%
-  );
-  color: var(--color-foreground);
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+  /* Deep blue-purple gradient background */
+  background: 
+    radial-gradient(ellipse at 20% 0%, rgba(88, 86, 214, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 100%, rgba(52, 199, 89, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(10, 132, 255, 0.05) 0%, transparent 70%),
+    linear-gradient(180deg, #1c1c2e 0%, #0d0d1a 100%);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', system-ui, sans-serif;
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Glass Panel - Main content areas */
-.glass {
-  background: linear-gradient(
-    145deg,
-    rgba(25, 32, 55, 0.65) 0%,
-    rgba(18, 24, 42, 0.55) 100%
-  );
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border: 1px solid rgba(80, 100, 160, 0.15);
+/* Liquid Glass Panel */
+.liquid-glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
   box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    0 8px 40px var(--glass-shadow),
+    inset 0 0.5px 0 rgba(255, 255, 255, 0.12),
+    inset 0 -0.5px 0 rgba(0, 0, 0, 0.1);
 }
 
-.glass-hover:hover {
-  background: linear-gradient(
-    145deg,
-    rgba(35, 45, 75, 0.7) 0%,
-    rgba(25, 35, 60, 0.6) 100%
-  );
-  border-color: rgba(100, 120, 180, 0.25);
+.liquid-glass-hover:hover {
+  background: var(--glass-bg-hover);
+  border-color: var(--glass-border-light);
 }
 
-.glass-active {
-  background: linear-gradient(
-    145deg,
-    rgba(50, 65, 110, 0.75) 0%,
-    rgba(40, 55, 95, 0.65) 100%
-  );
-  border-color: rgba(91, 127, 245, 0.4);
+.liquid-glass-active {
+  background: var(--glass-bg-active);
+  border-color: var(--glass-border-light);
 }
 
-/* Glass Card - For content cards */
-.glass-card {
-  background: linear-gradient(
-    150deg,
-    rgba(22, 28, 48, 0.75) 0%,
-    rgba(16, 22, 40, 0.65) 100%
-  );
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  border: 1px solid rgba(70, 90, 140, 0.2);
-  border-radius: var(--radius-xl);
+/* Liquid Glass Card */
+.liquid-card {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(30px) saturate(150%);
+  -webkit-backdrop-filter: blur(30px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
   box-shadow: 
-    0 4px 20px rgba(0, 0, 0, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    0 4px 24px rgba(0, 0, 0, 0.15),
+    inset 0 0.5px 0 rgba(255, 255, 255, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Sidebar - Darker, more solid */
-.glass-sidebar {
-  background: linear-gradient(
-    180deg,
-    rgba(12, 14, 24, 0.95) 0%,
-    rgba(8, 10, 18, 0.98) 100%
-  );
-  backdrop-filter: blur(32px);
-  -webkit-backdrop-filter: blur(32px);
-  border-right: 1px solid rgba(50, 60, 90, 0.25);
+.liquid-card:hover {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.12);
+  transform: translateY(-1px);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.2),
+    inset 0 0.5px 0 rgba(255, 255, 255, 0.15);
 }
 
-/* Status Card - Slightly brighter glass */
-.glass-status {
-  background: linear-gradient(
-    140deg,
-    rgba(30, 40, 70, 0.6) 0%,
-    rgba(22, 30, 55, 0.5) 100%
-  );
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(80, 100, 150, 0.2);
-  border-radius: var(--radius-lg);
+/* Sidebar - More solid but still glassy */
+.liquid-sidebar {
+  background: rgba(20, 20, 35, 0.8);
+  backdrop-filter: blur(50px) saturate(200%);
+  -webkit-backdrop-filter: blur(50px) saturate(200%);
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* Nav item */
+.nav-item {
+  padding: 10px 12px;
+  border-radius: 10px;
+  transition: all 0.2s ease;
+  color: var(--text-secondary);
+}
+
+.nav-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+}
+
+.nav-item-active {
+  background: rgba(10, 132, 255, 0.2);
+  color: var(--text-primary);
 }
 
 /* Status indicators */
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
 .status-online {
-  background: #22c55e;
-  box-shadow: 0 0 12px rgba(34, 197, 94, 0.6);
+  background: var(--accent-green);
+  box-shadow: 0 0 8px var(--accent-green);
 }
 
 .status-active {
-  background: #22c55e;
-  box-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+  background: var(--accent-green);
+  box-shadow: 0 0 6px rgba(48, 209, 88, 0.5);
 }
 
 .status-idle {
-  background: #f59e0b;
-  box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+  background: var(--accent-orange);
+  box-shadow: 0 0 6px rgba(255, 159, 10, 0.5);
 }
 
 .status-offline {
-  background: #6b7280;
+  background: rgba(255, 255, 255, 0.3);
 }
 
-.status-progress {
-  background: #f59e0b;
-}
+/* Accent colors */
+.accent-blue { color: var(--accent-blue); }
+.accent-green { color: var(--accent-green); }
+.accent-orange { color: var(--accent-orange); }
+.accent-purple { color: var(--accent-purple); }
 
-.status-success {
-  background: #22c55e;
-}
+/* Text colors */
+.text-primary { color: var(--text-primary); }
+.text-secondary { color: var(--text-secondary); }
+.text-tertiary { color: var(--text-tertiary); }
 
-.status-error {
-  background: #ef4444;
-}
-
-/* Glow effects */
-.glow-blue {
-  box-shadow: 0 0 20px rgba(91, 127, 245, 0.25);
-}
-
-.glow-green {
-  box-shadow: 0 0 15px rgba(34, 197, 94, 0.3);
-}
-
-/* Selection highlight */
-.nav-selected {
-  background: linear-gradient(
-    90deg,
-    rgba(91, 127, 245, 0.2) 0%,
-    transparent 100%
-  );
-  border-left: 2px solid #5b7ff5;
-}
-
-/* Scrollbar styling */
+/* Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -174,45 +153,53 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(80, 100, 150, 0.4);
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(100, 120, 170, 0.5);
+  background: rgba(255, 255, 255, 0.25);
 }
 
-/* Text styles */
-.text-gradient {
-  background: linear-gradient(135deg, #e8eaed, #a0aec0);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Animation */
+/* Animations */
 @keyframes pulse-glow {
-  0%, 100% { opacity: 1; box-shadow: 0 0 10px currentColor; }
-  50% { opacity: 0.7; box-shadow: 0 0 5px currentColor; }
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
 }
 
 .animate-pulse-glow {
   animation: pulse-glow 2s ease-in-out infinite;
 }
 
-/* Activity item colors */
-.activity-progress {
-  color: #f59e0b;
+/* Button styles */
+.btn-glass {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  transition: all 0.2s ease;
 }
 
-.activity-success {
-  color: #22c55e;
+.btn-glass:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
-.activity-commit {
-  color: #f97316;
+.btn-primary {
+  background: var(--accent-blue);
+  border: none;
+  border-radius: 10px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: white;
+  transition: all 0.2s ease;
 }
 
-.activity-info {
-  color: #5b7ff5;
+.btn-primary:hover {
+  background: #0077ed;
+  transform: scale(1.02);
 }
