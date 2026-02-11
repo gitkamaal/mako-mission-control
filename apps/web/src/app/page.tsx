@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import { KanbanBoard } from "@/components/kanban-board";
 
 // Types
 interface Agent {
@@ -20,6 +20,18 @@ interface Agent {
   currentTaskId?: string;
   lastHeartbeat?: number;
   reportsTo?: string;
+}
+
+interface Task {
+  _id: string;
+  _creationTime: number;
+  title: string;
+  description?: string;
+  status: "inbox" | "assigned" | "in_progress" | "review" | "done" | "blocked";
+  priority: "low" | "medium" | "high" | "urgent";
+  createdBy: string;
+  createdByType: "agent" | "human";
+  assignedTo?: string;
 }
 
 interface Activity {
@@ -54,14 +66,14 @@ function AgentCard({ agent }: { agent: Agent }) {
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Avatar className="h-12 w-12 text-2xl">
+            <Avatar className="h-10 w-10 text-xl">
               <AvatarFallback className="bg-slate-100">
                 {agent.emoji}
               </AvatarFallback>
             </Avatar>
             <div>
-              <CardTitle className="text-lg">{agent.name}</CardTitle>
-              <CardDescription>{agent.role}</CardDescription>
+              <CardTitle className="text-base">{agent.name}</CardTitle>
+              <CardDescription className="text-xs">{agent.role}</CardDescription>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -72,17 +84,9 @@ function AgentCard({ agent }: { agent: Agent }) {
           </div>
         </div>
       </CardHeader>
-      <CardContent>
-        {agent.description && (
-          <p className="text-sm text-muted-foreground">{agent.description}</p>
-        )}
-        {agent.reportsTo && (
-          <Badge variant="outline" className="mt-2">
-            Reports to {agent.reportsTo}
-          </Badge>
-        )}
-        <p className="mt-3 text-xs text-muted-foreground">
-          Last heartbeat: {timeSince(agent.lastHeartbeat)}
+      <CardContent className="pt-0">
+        <p className="text-xs text-muted-foreground">
+          Last seen: {timeSince(agent.lastHeartbeat)}
         </p>
       </CardContent>
     </Card>
@@ -98,7 +102,7 @@ function ConnectionStatus({ connected }: { connected: boolean }) {
         }`}
       />
       <span className="text-sm text-muted-foreground">
-        {connected ? "Connected to Convex" : "Connecting..."}
+        {connected ? "Connected" : "Connecting..."}
       </span>
     </div>
   );
@@ -108,11 +112,13 @@ function ActivityItem({ activity }: { activity: Activity }) {
   const getActivityText = (activity: Activity): string => {
     switch (activity.type) {
       case "task_created":
-        return `created task "${(activity.data?.title as string) || "Untitled"}"`;
+        return `created "${(activity.data?.title as string) || "task"}"`;
       case "task_claimed":
         return "claimed a task";
       case "task_completed":
         return "completed a task";
+      case "task_updated":
+        return `updated task to ${activity.data?.newStatus}`;
       case "comment_added":
         return "added a comment";
       case "mention":
@@ -120,7 +126,7 @@ function ActivityItem({ activity }: { activity: Activity }) {
       case "agent_spawned":
         return activity.data?.message as string || "joined the squad";
       case "agent_heartbeat":
-        return "checked in";
+        return "checked in ✓";
       default:
         return activity.type.replace(/_/g, " ");
     }
@@ -134,30 +140,26 @@ function ActivityItem({ activity }: { activity: Activity }) {
     return `${Math.floor(seconds / 86400)}d ago`;
   };
 
-  // Get emoji for actor (lookup from agents would be better, but this works for now)
-  const getEmoji = (name: string): string => {
-    const emojiMap: Record<string, string> = {
-      Mako: "🦈",
-      Scout: "🔍",
-      Scribe: "✍️",
-      Atlas: "🏛️",
-      Pixel: "🎨",
-      Forge: "⚙️",
-      System: "🤖",
-      human: "👤",
-    };
-    return emojiMap[name] || "🤖";
+  const agentEmojis: Record<string, string> = {
+    Mako: "🦈",
+    Scout: "🔍",
+    Scribe: "✍️",
+    Atlas: "🏛️",
+    Pixel: "🎨",
+    Forge: "⚙️",
+    System: "🤖",
+    human: "👤",
   };
 
   return (
-    <div className="flex items-start gap-3">
-      <Avatar className="h-8 w-8 text-lg">
-        <AvatarFallback className="bg-slate-100">
-          {getEmoji(activity.actorName)}
+    <div className="flex items-start gap-3 py-2">
+      <Avatar className="h-6 w-6 text-sm">
+        <AvatarFallback className="bg-slate-100 text-xs">
+          {agentEmojis[activity.actorName] || "🤖"}
         </AvatarFallback>
       </Avatar>
-      <div className="flex-1">
-        <p className="text-sm">
+      <div className="flex-1 min-w-0">
+        <p className="text-sm truncate">
           <span className="font-medium">{activity.actorName}</span>{" "}
           <span className="text-muted-foreground">{getActivityText(activity)}</span>
         </p>
@@ -172,28 +174,28 @@ function ActivityItem({ activity }: { activity: Activity }) {
 export default function Dashboard() {
   const agents = useQuery(api.agents.list);
   const tasks = useQuery(api.tasks.list, {});
-  const activity = useQuery(api.activity.recent, { limit: 10 });
+  const activity = useQuery(api.activity.recent, { limit: 15 });
 
   const connected = agents !== undefined;
 
   const activeAgents = agents?.filter((a) => a.status === "active").length ?? 0;
-  const tasksByStatus = {
-    inbox: tasks?.filter((t) => t.status === "inbox").length ?? 0,
-    in_progress: tasks?.filter((t) => t.status === "in_progress").length ?? 0,
-    done: tasks?.filter((t) => t.status === "done").length ?? 0,
-  };
+  const totalTasks = tasks?.length ?? 0;
+  const doneTasks = tasks?.filter((t) => t.status === "done").length ?? 0;
+  const inProgressTasks = tasks?.filter((t) => 
+    t.status === "in_progress" || t.status === "assigned"
+  ).length ?? 0;
 
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Header */}
-      <header className="border-b bg-white px-6 py-4">
-        <div className="mx-auto flex max-w-7xl items-center justify-between">
+      <header className="sticky top-0 z-10 border-b bg-white px-6 py-3">
+        <div className="mx-auto flex max-w-[1600px] items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="text-3xl">🦈</span>
+            <span className="text-2xl">🦈</span>
             <div>
-              <h1 className="text-xl font-bold">Mako Mission Control</h1>
-              <p className="text-sm text-muted-foreground">
-                AI Agent Orchestration Dashboard
+              <h1 className="text-lg font-bold">Mako Mission Control</h1>
+              <p className="text-xs text-muted-foreground">
+                AI Agent Orchestration
               </p>
             </div>
           </div>
@@ -202,97 +204,60 @@ export default function Dashboard() {
       </header>
 
       {/* Main Content */}
-      <main className="mx-auto max-w-7xl p-6">
-        {/* Stats Row */}
-        <div className="mb-8 grid gap-4 md:grid-cols-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardDescription>Active Agents</CardDescription>
-              <CardTitle className="text-3xl">{activeAgents}</CardTitle>
-            </CardHeader>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardDescription>Tasks in Queue</CardDescription>
-              <CardTitle className="text-3xl">{tasksByStatus.inbox}</CardTitle>
-            </CardHeader>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardDescription>In Progress</CardDescription>
-              <CardTitle className="text-3xl">{tasksByStatus.in_progress}</CardTitle>
-            </CardHeader>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardDescription>Completed</CardDescription>
-              <CardTitle className="text-3xl">{tasksByStatus.done}</CardTitle>
-            </CardHeader>
-          </Card>
-        </div>
-
-        {/* Agents Section */}
-        <section className="mb-8">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Agent Squad</h2>
-            <Button variant="outline" size="sm">
-              + Add Agent
-            </Button>
-          </div>
-          {agents === undefined ? (
-            <div className="grid gap-4 md:grid-cols-3">
-              {[1, 2, 3].map((i) => (
-                <Card key={i} className="animate-pulse">
-                  <CardHeader className="pb-2">
-                    <div className="h-12 w-12 rounded-full bg-slate-200" />
-                    <div className="h-4 w-24 bg-slate-200 rounded mt-2" />
-                  </CardHeader>
-                </Card>
-              ))}
-            </div>
-          ) : agents.length === 0 ? (
+      <main className="mx-auto max-w-[1600px] p-6">
+        {/* Stats + Agents Row */}
+        <div className="grid gap-6 lg:grid-cols-[1fr_350px] mb-6">
+          {/* Stats Cards */}
+          <div className="grid gap-4 sm:grid-cols-4">
             <Card>
-              <CardContent className="py-8 text-center text-muted-foreground">
-                No agents yet. Run the seed script to initialize the squad.
-                <pre className="mt-2 text-xs bg-slate-100 p-2 rounded">
-                  npx convex run seed:seedAgents
-                </pre>
-              </CardContent>
+              <CardHeader className="pb-2">
+                <CardDescription className="text-xs">Active Agents</CardDescription>
+                <CardTitle className="text-2xl">{activeAgents} / {agents?.length ?? 0}</CardTitle>
+              </CardHeader>
             </Card>
-          ) : (
-            <div className="grid gap-4 md:grid-cols-3">
-              {agents.map((agent) => (
-                <AgentCard key={agent._id} agent={agent as Agent} />
-              ))}
-            </div>
-          )}
-        </section>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription className="text-xs">Total Tasks</CardDescription>
+                <CardTitle className="text-2xl">{totalTasks}</CardTitle>
+              </CardHeader>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription className="text-xs">In Progress</CardDescription>
+                <CardTitle className="text-2xl text-blue-600">{inProgressTasks}</CardTitle>
+              </CardHeader>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription className="text-xs">Completed</CardDescription>
+                <CardTitle className="text-2xl text-green-600">{doneTasks}</CardTitle>
+              </CardHeader>
+            </Card>
+          </div>
 
-        <Separator className="my-8" />
-
-        {/* Activity Feed */}
-        <section>
-          <h2 className="mb-4 text-lg font-semibold">Recent Activity</h2>
-          <Card>
-            <CardContent className="p-4">
+          {/* Activity Feed */}
+          <Card className="row-span-2">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm">Activity Feed</CardTitle>
+            </CardHeader>
+            <CardContent className="max-h-[400px] overflow-y-auto">
               {activity === undefined ? (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {[1, 2, 3].map((i) => (
                     <div key={i} className="flex items-start gap-3 animate-pulse">
-                      <div className="h-8 w-8 rounded-full bg-slate-200" />
+                      <div className="h-6 w-6 rounded-full bg-slate-200" />
                       <div className="flex-1">
-                        <div className="h-4 w-48 bg-slate-200 rounded" />
-                        <div className="h-3 w-24 bg-slate-200 rounded mt-1" />
+                        <div className="h-4 w-32 bg-slate-200 rounded" />
                       </div>
                     </div>
                   ))}
                 </div>
               ) : activity.length === 0 ? (
-                <p className="text-center text-muted-foreground py-4">
-                  No activity yet. The feed will update as agents work.
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  No activity yet
                 </p>
               ) : (
-                <div className="space-y-4">
+                <div className="divide-y">
                   {activity.map((item) => (
                     <ActivityItem key={item._id} activity={item as Activity} />
                   ))}
@@ -300,6 +265,48 @@ export default function Dashboard() {
               )}
             </CardContent>
           </Card>
+
+          {/* Agent Squad */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-sm font-semibold">Agent Squad</h2>
+            </div>
+            {agents === undefined ? (
+              <div className="grid gap-3 sm:grid-cols-3">
+                {[1, 2, 3].map((i) => (
+                  <Card key={i} className="animate-pulse h-24" />
+                ))}
+              </div>
+            ) : (
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {agents.map((agent) => (
+                  <AgentCard key={agent._id} agent={agent as Agent} />
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <Separator className="my-6" />
+
+        {/* Kanban Board */}
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold">Task Board</h2>
+            <Button variant="outline" size="sm">
+              + New Task
+            </Button>
+          </div>
+          
+          {tasks === undefined ? (
+            <div className="flex gap-4">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="flex-1 min-w-[280px] h-[300px] bg-slate-100 rounded-lg animate-pulse" />
+              ))}
+            </div>
+          ) : (
+            <KanbanBoard tasks={tasks as any} />
+          )}
         </section>
       </main>
     </div>
