@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { KanbanBoard } from "@/components/kanban-board";
+import { CreateTaskModal } from "@/components/create-task-modal";
+import { GatewayStatus } from "@/components/gateway-status";
 
 // Types
 interface Agent {
@@ -118,7 +121,7 @@ function ActivityItem({ activity }: { activity: Activity }) {
       case "task_completed":
         return "completed a task";
       case "task_updated":
-        return `updated task to ${activity.data?.newStatus}`;
+        return `moved task to ${activity.data?.newStatus}`;
       case "comment_added":
         return "added a comment";
       case "mention":
@@ -172,6 +175,8 @@ function ActivityItem({ activity }: { activity: Activity }) {
 }
 
 export default function Dashboard() {
+  const [createTaskOpen, setCreateTaskOpen] = useState(false);
+  
   const agents = useQuery(api.agents.list);
   const tasks = useQuery(api.tasks.list, {});
   const activity = useQuery(api.activity.recent, { limit: 15 });
@@ -205,85 +210,94 @@ export default function Dashboard() {
 
       {/* Main Content */}
       <main className="mx-auto max-w-[1600px] p-6">
-        {/* Stats + Agents Row */}
+        {/* Top Row: Stats + Sidebar */}
         <div className="grid gap-6 lg:grid-cols-[1fr_350px] mb-6">
-          {/* Stats Cards */}
-          <div className="grid gap-4 sm:grid-cols-4">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardDescription className="text-xs">Active Agents</CardDescription>
-                <CardTitle className="text-2xl">{activeAgents} / {agents?.length ?? 0}</CardTitle>
-              </CardHeader>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardDescription className="text-xs">Total Tasks</CardDescription>
-                <CardTitle className="text-2xl">{totalTasks}</CardTitle>
-              </CardHeader>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardDescription className="text-xs">In Progress</CardDescription>
-                <CardTitle className="text-2xl text-blue-600">{inProgressTasks}</CardTitle>
-              </CardHeader>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardDescription className="text-xs">Completed</CardDescription>
-                <CardTitle className="text-2xl text-green-600">{doneTasks}</CardTitle>
-              </CardHeader>
-            </Card>
-          </div>
+          {/* Left: Stats + Agents */}
+          <div className="space-y-6">
+            {/* Stats Cards */}
+            <div className="grid gap-4 sm:grid-cols-4">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardDescription className="text-xs">Active Agents</CardDescription>
+                  <CardTitle className="text-2xl">{activeAgents} / {agents?.length ?? 0}</CardTitle>
+                </CardHeader>
+              </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardDescription className="text-xs">Total Tasks</CardDescription>
+                  <CardTitle className="text-2xl">{totalTasks}</CardTitle>
+                </CardHeader>
+              </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardDescription className="text-xs">In Progress</CardDescription>
+                  <CardTitle className="text-2xl text-blue-600">{inProgressTasks}</CardTitle>
+                </CardHeader>
+              </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardDescription className="text-xs">Completed</CardDescription>
+                  <CardTitle className="text-2xl text-green-600">{doneTasks}</CardTitle>
+                </CardHeader>
+              </Card>
+            </div>
 
-          {/* Activity Feed */}
-          <Card className="row-span-2">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm">Activity Feed</CardTitle>
-            </CardHeader>
-            <CardContent className="max-h-[400px] overflow-y-auto">
-              {activity === undefined ? (
-                <div className="space-y-3">
+            {/* Agent Squad */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-sm font-semibold">Agent Squad</h2>
+              </div>
+              {agents === undefined ? (
+                <div className="grid gap-3 sm:grid-cols-3">
                   {[1, 2, 3].map((i) => (
-                    <div key={i} className="flex items-start gap-3 animate-pulse">
-                      <div className="h-6 w-6 rounded-full bg-slate-200" />
-                      <div className="flex-1">
-                        <div className="h-4 w-32 bg-slate-200 rounded" />
-                      </div>
-                    </div>
+                    <Card key={i} className="animate-pulse h-24" />
                   ))}
                 </div>
-              ) : activity.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">
-                  No activity yet
-                </p>
               ) : (
-                <div className="divide-y">
-                  {activity.map((item) => (
-                    <ActivityItem key={item._id} activity={item as Activity} />
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {agents.map((agent) => (
+                    <AgentCard key={agent._id} agent={agent as Agent} />
                   ))}
                 </div>
               )}
-            </CardContent>
-          </Card>
-
-          {/* Agent Squad */}
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-semibold">Agent Squad</h2>
             </div>
-            {agents === undefined ? (
-              <div className="grid gap-3 sm:grid-cols-3">
-                {[1, 2, 3].map((i) => (
-                  <Card key={i} className="animate-pulse h-24" />
-                ))}
-              </div>
-            ) : (
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {agents.map((agent) => (
-                  <AgentCard key={agent._id} agent={agent as Agent} />
-                ))}
-              </div>
-            )}
+          </div>
+
+          {/* Right Sidebar: Activity + Gateway */}
+          <div className="space-y-4">
+            {/* Gateway Status */}
+            <GatewayStatus />
+
+            {/* Activity Feed */}
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">Activity Feed</CardTitle>
+              </CardHeader>
+              <CardContent className="max-h-[350px] overflow-y-auto">
+                {activity === undefined ? (
+                  <div className="space-y-3">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="flex items-start gap-3 animate-pulse">
+                        <div className="h-6 w-6 rounded-full bg-slate-200" />
+                        <div className="flex-1">
+                          <div className="h-4 w-32 bg-slate-200 rounded" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : activity.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">
+                    No activity yet
+                  </p>
+                ) : (
+                  <div className="divide-y">
+                    {activity.map((item) => (
+                      <ActivityItem key={item._id} activity={item as Activity} />
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
         </div>
 
@@ -293,7 +307,7 @@ export default function Dashboard() {
         <section>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold">Task Board</h2>
-            <Button variant="outline" size="sm">
+            <Button onClick={() => setCreateTaskOpen(true)}>
               + New Task
             </Button>
           </div>
@@ -309,6 +323,9 @@ export default function Dashboard() {
           )}
         </section>
       </main>
+
+      {/* Create Task Modal */}
+      <CreateTaskModal open={createTaskOpen} onOpenChange={setCreateTaskOpen} />
     </div>
   );
 }
