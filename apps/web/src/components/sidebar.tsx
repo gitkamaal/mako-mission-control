@@ -29,13 +29,13 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
       {/* Logo */}
       <div className="p-5">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
-            <span className="text-xl">🦈</span>
+          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-500/80 to-purple-600/80 flex items-center justify-center shadow-lg shadow-purple-500/20 border border-white/10">
+            <span className="text-2xl">🦈</span>
           </div>
           <div>
-            <h1 className="font-semibold">Mission Control</h1>
+            <h1 className="font-semibold text-[15px]">Mission Control</h1>
             <div className="flex items-center gap-2">
-              <div className="status-dot status-online" />
+              <div className="w-1.5 h-1.5 rounded-full bg-[#30d158] shadow-[0_0_6px_rgba(48,209,88,0.8)]" />
               <span className="text-xs text-secondary">Online</span>
             </div>
           </div>
@@ -50,18 +50,20 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
               key={item.id}
               onClick={() => onTabChange(item.id)}
               className={cn(
-                "nav-item w-full flex items-center gap-3 text-sm",
-                activeTab === item.id && "nav-item-active"
+                "nav-item w-full flex items-center gap-3 text-sm font-medium transition-all",
+                activeTab === item.id 
+                  ? "nav-item-active shadow-[0_0_20px_rgba(10,132,255,0.15)]" 
+                  : "hover:translate-x-0.5"
               )}
             >
-              <span className="text-lg">{item.icon}</span>
+              <span className="text-base w-6 text-center">{item.icon}</span>
               <span>{item.label}</span>
             </button>
           ))}
         </div>
 
         <div className="mt-8">
-          <p className="px-3 mb-2 text-[11px] font-medium text-tertiary uppercase tracking-wider">
+          <p className="px-3 mb-3 text-[10px] font-semibold text-tertiary uppercase tracking-widest">
             System
           </p>
           <div className="space-y-1">
@@ -70,11 +72,13 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
                 key={item.id}
                 onClick={() => onTabChange(item.id)}
                 className={cn(
-                  "nav-item w-full flex items-center gap-3 text-sm",
-                  activeTab === item.id && "nav-item-active"
+                  "nav-item w-full flex items-center gap-3 text-sm font-medium transition-all",
+                  activeTab === item.id 
+                    ? "nav-item-active shadow-[0_0_20px_rgba(10,132,255,0.15)]" 
+                    : "hover:translate-x-0.5"
                 )}
               >
-                <span className="text-lg">{item.icon}</span>
+                <span className="text-base w-6 text-center">{item.icon}</span>
                 <span>{item.label}</span>
               </button>
             ))}
@@ -84,14 +88,15 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
 
       {/* User */}
       <div className="p-4 border-t border-white/5">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-gray-500 to-gray-700 flex items-center justify-center">
-            <span>👤</span>
+        <div className="flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 transition-colors cursor-pointer">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500/50 to-purple-600/50 flex items-center justify-center text-sm border border-white/10">
+            K
           </div>
           <div className="flex-1">
             <p className="text-sm font-medium">Kamaal</p>
-            <p className="text-xs text-secondary">Admin</p>
+            <p className="text-[11px] text-secondary">Admin</p>
           </div>
+          <span className="text-secondary text-xs">⚡</span>
         </div>
       </div>
     </aside>

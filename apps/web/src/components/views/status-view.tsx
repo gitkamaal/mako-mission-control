@@ -28,28 +28,28 @@ export function StatusView() {
       <div className="grid grid-cols-4 gap-5">
         <StatusCard
           icon="●"
-          iconClass="accent-green"
+          color="green"
           label="Status"
           value="Online"
           detail="Ready and waiting for tasks"
         />
         <StatusCard
           icon="◐"
-          iconClass="accent-blue"
+          color="blue"
           label="Workshop"
           value={`${inProgressTasks} active`}
           detail={`${queuedTasks} queued`}
         />
         <StatusCard
           icon="👥"
-          iconClass="accent-purple"
+          color="purple"
           label="Agents"
           value={`${activeAgents}/${agents?.length ?? 0}`}
           detail="Currently online"
         />
         <StatusCard
           icon="✓"
-          iconClass="accent-green"
+          color="orange"
           label="Completed"
           value={String(doneTasks)}
           detail="Tasks done"
@@ -57,19 +57,25 @@ export function StatusView() {
       </div>
 
       {/* Main Grid */}
-      <div className="grid grid-cols-[1fr_320px] gap-6">
+      <div className="grid grid-cols-[1fr_340px] gap-6">
         {/* Activity Feed */}
         <div className="liquid-card p-6">
           <div className="flex items-center justify-between mb-5">
-            <h2 className="font-semibold">Live Activity</h2>
-            <span className="text-sm text-secondary">{activity?.length ?? 0} events</span>
+            <h2 className="text-lg font-semibold">Live Activity</h2>
+            <span className="kanban-count">{activity?.length ?? 0} events</span>
           </div>
           
-          <div className="space-y-2">
+          <div className="space-y-1">
             {activity === undefined ? (
-              <div className="text-center text-secondary py-8">Loading...</div>
+              <div className="empty-state">
+                <div className="empty-state-icon">⏳</div>
+                <span>Loading activity...</span>
+              </div>
             ) : activity.length === 0 ? (
-              <div className="text-center text-secondary py-8">No activity yet</div>
+              <div className="empty-state">
+                <div className="empty-state-icon">📭</div>
+                <span>No activity yet</span>
+              </div>
             ) : (
               activity.map((item) => (
                 <ActivityRow key={item._id} activity={item} />
@@ -84,9 +90,9 @@ export function StatusView() {
           <div className="liquid-card p-5">
             <h3 className="font-semibold mb-4">Quick Actions</h3>
             <div className="space-y-2">
-              <QuickAction icon="📋" label="Create Task" />
-              <QuickAction icon="🔄" label="Refresh Status" />
-              <QuickAction icon="📊" label="View Analytics" />
+              <QuickAction icon="📋" label="Create Task" color="blue" />
+              <QuickAction icon="🔄" label="Refresh Status" color="green" />
+              <QuickAction icon="📊" label="View Analytics" color="purple" />
             </div>
           </div>
 
@@ -95,12 +101,12 @@ export function StatusView() {
             <h3 className="font-semibold mb-4">Recent Tasks</h3>
             <div className="space-y-3">
               {tasks?.slice(0, 4).map((task) => (
-                <div key={task._id} className="flex items-center gap-3">
-                  <div className={`status-dot ${
-                    task.status === "done" ? "status-active" : 
-                    task.status === "in_progress" ? "status-idle" : "status-offline"
+                <div key={task._id} className="flex items-center gap-3 group">
+                  <div className={`w-2 h-2 rounded-full ${
+                    task.status === "done" ? "bg-[#30d158]" : 
+                    task.status === "in_progress" ? "bg-[#ff9f0a]" : "bg-white/30"
                   }`} />
-                  <span className="text-sm truncate flex-1">{task.title}</span>
+                  <span className="text-sm truncate flex-1 group-hover:text-white transition-colors">{task.title}</span>
                 </div>
               ))}
               {(!tasks || tasks.length === 0) && (
@@ -116,21 +122,28 @@ export function StatusView() {
 
 function StatusCard({ 
   icon, 
-  iconClass,
+  color,
   label, 
   value, 
   detail 
 }: { 
   icon: string;
-  iconClass: string;
+  color: "green" | "blue" | "purple" | "orange";
   label: string;
   value: string;
   detail: string;
 }) {
+  const colorClasses = {
+    green: "stat-card-green accent-green",
+    blue: "stat-card-blue accent-blue",
+    purple: "stat-card-purple accent-purple",
+    orange: "stat-card-orange accent-orange",
+  };
+
   return (
-    <div className="liquid-card p-5">
+    <div className={`liquid-card stat-card ${colorClasses[color].split(" ")[0]} p-5 hover-lift`}>
       <div className="flex items-center gap-2 mb-3">
-        <span className={iconClass}>{icon}</span>
+        <span className={colorClasses[color].split(" ")[1]}>{icon}</span>
         <span className="text-sm text-secondary">{label}</span>
       </div>
       <div className="text-2xl font-semibold mb-1">{value}</div>
@@ -140,17 +153,11 @@ function StatusCard({
 }
 
 function ActivityRow({ activity }: { activity: any }) {
-  const getIcon = (type: string) => {
-    if (type.includes("task")) return "📋";
-    if (type.includes("agent")) return "🤖";
-    if (type.includes("comment")) return "💬";
-    return "⚡";
-  };
-
-  const getStatusClass = (type: string) => {
-    if (type.includes("completed")) return "status-active";
-    if (type.includes("progress") || type.includes("claimed")) return "status-idle";
-    return "status-offline";
+  const getIconData = (type: string) => {
+    if (type.includes("task")) return { icon: "📋", bg: "activity-icon-task" };
+    if (type.includes("agent") || type.includes("heartbeat")) return { icon: "🤖", bg: "activity-icon-agent" };
+    if (type.includes("system") || type.includes("spawn")) return { icon: "⚡", bg: "activity-icon-system" };
+    return { icon: "📌", bg: "activity-icon-task" };
   };
 
   const timeSince = (ts: number) => {
@@ -160,28 +167,35 @@ function ActivityRow({ activity }: { activity: any }) {
     return `${Math.floor(s / 3600)}h`;
   };
 
+  const { icon, bg } = getIconData(activity.type);
+
   return (
-    <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-colors">
-      <div className={`status-dot ${getStatusClass(activity.type)}`} />
-      <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-sm">
-        {getIcon(activity.type)}
+    <div className="activity-item group cursor-pointer">
+      <div className={`activity-icon ${bg}`}>
+        {icon}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium">{activity.actorName}</p>
-        <p className="text-xs text-secondary truncate">
+        <p className="text-sm font-medium group-hover:text-white transition-colors">{activity.actorName}</p>
+        <p className="text-xs text-secondary">
           {activity.type.replace(/_/g, " ")}
         </p>
       </div>
-      <span className="text-xs text-secondary">{timeSince(activity._creationTime)}</span>
+      <span className="text-xs text-tertiary">{timeSince(activity._creationTime)}</span>
     </div>
   );
 }
 
-function QuickAction({ icon, label }: { icon: string; label: string }) {
+function QuickAction({ icon, label, color }: { icon: string; label: string; color: string }) {
+  const hoverClasses: Record<string, string> = {
+    blue: "hover:bg-[#0a84ff]/10",
+    green: "hover:bg-[#30d158]/10",
+    purple: "hover:bg-[#bf5af2]/10",
+  };
+
   return (
-    <button className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-colors text-left">
+    <button className={`w-full flex items-center gap-3 p-3 rounded-xl ${hoverClasses[color]} transition-all text-left hover:translate-x-1`}>
       <span className="text-lg">{icon}</span>
-      <span className="text-sm">{label}</span>
+      <span className="text-sm font-medium">{label}</span>
     </button>
   );
 }

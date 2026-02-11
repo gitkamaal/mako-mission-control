@@ -6,18 +6,11 @@ import { api } from "../../../convex/_generated/api";
 import { CreateTaskModal } from "@/components/create-task-modal";
 
 const columns = [
-  { id: "inbox", label: "Inbox", icon: "📥" },
-  { id: "in_progress", label: "In Progress", icon: "🔄" },
-  { id: "review", label: "Review", icon: "👀" },
-  { id: "done", label: "Done", icon: "✅" },
+  { id: "inbox", label: "Inbox", icon: "📥", color: "blue" },
+  { id: "in_progress", label: "In Progress", icon: "🔄", color: "orange" },
+  { id: "review", label: "Review", icon: "👀", color: "purple" },
+  { id: "done", label: "Done", icon: "✅", color: "green" },
 ];
-
-const priorityStyles: Record<string, string> = {
-  low: "bg-white/10 text-white/70",
-  medium: "bg-blue-500/20 text-blue-300",
-  high: "bg-orange-500/20 text-orange-300",
-  urgent: "bg-red-500/20 text-red-300",
-};
 
 const agentEmojis: Record<string, string> = {
   Mako: "🦈", Scout: "🔍", Scribe: "✍️", Atlas: "🏛️", Pixel: "🎨", Forge: "⚙️",
@@ -46,9 +39,9 @@ export function TasksView() {
         </div>
         <button 
           onClick={() => setCreateOpen(true)}
-          className="btn-primary"
+          className="btn-primary flex items-center gap-2"
         >
-          + New Task
+          <span>+</span> New Task
         </button>
       </div>
 
@@ -56,28 +49,29 @@ export function TasksView() {
         {columns.map((column) => (
           <div 
             key={column.id} 
-            className="flex-1 min-w-[300px] max-w-[350px] flex flex-col"
+            className="flex-1 min-w-[300px] max-w-[350px] flex flex-col kanban-column"
           >
             {/* Column Header */}
-            <div className="flex items-center justify-between mb-4">
+            <div className="kanban-column-header">
               <div className="flex items-center gap-2">
-                <span>{column.icon}</span>
-                <h3 className="font-medium">{column.label}</h3>
+                <span className="text-lg">{column.icon}</span>
+                <h3 className="font-semibold">{column.label}</h3>
               </div>
-              <span className="px-2 py-1 rounded-lg bg-white/10 text-xs">
+              <span className="kanban-count">
                 {tasksByStatus[column.id]?.length ?? 0}
               </span>
             </div>
 
             {/* Tasks */}
-            <div className="flex-1 space-y-3">
+            <div className="flex-1 p-3 space-y-3 overflow-y-auto max-h-[calc(100vh-280px)]">
               {tasksByStatus[column.id]?.length === 0 ? (
-                <div className="liquid-card p-6 text-center text-secondary text-sm">
-                  No tasks
+                <div className="empty-state py-8">
+                  <div className="empty-state-icon">{column.icon}</div>
+                  <span className="text-sm">No tasks</span>
                 </div>
               ) : (
                 tasksByStatus[column.id]?.map((task) => (
-                  <TaskCard key={task._id} task={task} />
+                  <TaskCard key={task._id} task={task} columnColor={column.color} />
                 ))
               )}
             </div>
@@ -90,7 +84,7 @@ export function TasksView() {
   );
 }
 
-function TaskCard({ task }: { task: any }) {
+function TaskCard({ task, columnColor }: { task: any; columnColor: string }) {
   const timeSince = (ts: number) => {
     const s = Math.floor((Date.now() - ts) / 1000);
     if (s < 60) return "now";
@@ -99,35 +93,47 @@ function TaskCard({ task }: { task: any }) {
     return `${Math.floor(s / 86400)}d`;
   };
 
+  const getPriorityClass = (priority: string) => {
+    const classes: Record<string, string> = {
+      low: "priority-low",
+      medium: "priority-medium",
+      high: "priority-high",
+      urgent: "priority-urgent",
+    };
+    return classes[priority] || classes.medium;
+  };
+
   return (
-    <div className="liquid-card p-4 cursor-pointer">
+    <div className="liquid-card p-4 hover-lift cursor-pointer group">
       <div className="flex items-start justify-between gap-2 mb-2">
-        <h4 className="font-medium text-sm leading-tight">{task.title}</h4>
-        <span className={`px-2 py-0.5 rounded text-xs ${priorityStyles[task.priority]}`}>
+        <h4 className="font-medium text-sm leading-snug group-hover:text-white transition-colors">
+          {task.title}
+        </h4>
+        <span className={`priority-badge ${getPriorityClass(task.priority)}`}>
           {task.priority}
         </span>
       </div>
 
       {task.description && (
-        <p className="text-xs text-secondary mb-3 line-clamp-2">
+        <p className="text-xs text-secondary mb-3 line-clamp-2 leading-relaxed">
           {task.description}
         </p>
       )}
 
-      <div className="flex items-center justify-between text-xs text-secondary">
+      <div className="flex items-center justify-between pt-3 border-t border-white/5">
         <div className="flex items-center gap-2">
           {task.assignedTo ? (
             <>
-              <div className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[10px]">
+              <div className="w-6 h-6 rounded-lg bg-white/10 flex items-center justify-center text-xs">
                 {agentEmojis[task.assignedTo] || "🤖"}
               </div>
-              <span>{task.assignedTo}</span>
+              <span className="text-xs text-secondary">{task.assignedTo}</span>
             </>
           ) : (
-            <span className="opacity-50">Unassigned</span>
+            <span className="text-xs text-tertiary">Unassigned</span>
           )}
         </div>
-        <span>{timeSince(task._creationTime)}</span>
+        <span className="text-xs text-tertiary">{timeSince(task._creationTime)}</span>
       </div>
     </div>
   );
