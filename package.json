@@ -1,0 +1,15 @@
+{
+  "name": "mako-mission-control",
+  "version": "0.1.0",
+  "private": true,
+  "description": "🦈 Mission Control for Mako - AI Agent Orchestration Dashboard",
+  "workspaces": ["apps/*", "packages/*"],
+  "scripts": {
+    "dev": "bun run --cwd apps/web dev",
+    "build": "bun run --cwd apps/web build",
+    "convex": "bun run --cwd apps/web convex dev"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}
