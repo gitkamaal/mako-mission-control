@@ -1,8 +1,8 @@
 {
   "$schema": "../../../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "Mako Mission Control",
+  "productName": "Mako Control",
   "version": "0.1.0",
-  "identifier": "com.mako.missioncontrol",
+  "identifier": "com.mako.control",
   "build": {
     "frontendDist": "../out",
     "devUrl": "http://localhost:3000",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "🦈 Mako Mission Control",
+        "title": "🦈 Mako Control",
         "width": 1400,
         "height": 900,
         "minWidth": 1000,
@@ -40,7 +40,15 @@
       "icons/icon.ico"
     ],
     "macOS": {
-      "minimumSystemVersion": "10.13"
-    }
+      "minimumSystemVersion": "10.13",
+      "frameworks": [],
+      "exceptionDomain": "",
+      "signingIdentity": null,
+      "providerShortName": null,
+      "entitlements": null
+    },
+    "category": "DeveloperTool",
+    "shortDescription": "AI Agent Mission Control",
+    "longDescription": "Mako Control - Your AI agent command center for orchestrating Scout, managing tasks, and staying on top of AI trends and SaaS opportunities."
   }
 }

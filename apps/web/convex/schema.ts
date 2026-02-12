@@ -105,4 +105,77 @@ export default defineSchema({
   }).index("by_session_key", ["sessionKey"])
     .index("by_agent", ["agentName"])
     .index("by_status", ["status"]),
+
+  // ==========================================
+  // INTELLIGENCE MODULE
+  // ==========================================
+
+  // Topics to monitor (AI, SaaS ideas, pain points, etc.)
+  intelTopics: defineTable({
+    name: v.string(),
+    description: v.optional(v.string()),
+    keywords: v.array(v.string()), // Search terms
+    emoji: v.string(),
+    enabled: v.boolean(),
+    lastScanned: v.optional(v.number()),
+  }).index("by_name", ["name"])
+    .index("by_enabled", ["enabled"]),
+
+  // Individual intel items (articles, findings, etc.)
+  intelItems: defineTable({
+    title: v.string(),
+    url: v.optional(v.string()),
+    source: v.string(), // TechCrunch, Reddit, HN, etc.
+    sourceIcon: v.string(),
+    summary: v.optional(v.string()),
+    content: v.optional(v.string()), // Full content if fetched
+    relevance: v.union(v.literal("high"), v.literal("medium"), v.literal("low")),
+    topicId: v.optional(v.id("intelTopics")),
+    tags: v.array(v.string()),
+    publishedAt: v.optional(v.number()),
+    discoveredAt: v.number(),
+    saved: v.boolean(), // User bookmarked
+    read: v.boolean(),
+    aiInsights: v.optional(v.string()), // Scout's analysis
+  }).index("by_topic", ["topicId"])
+    .index("by_saved", ["saved"])
+    .index("by_relevance", ["relevance"])
+    .index("by_discovered", ["discoveredAt"]),
+
+  // Daily digests compiled by Scout
+  intelDigests: defineTable({
+    date: v.string(), // YYYY-MM-DD
+    title: v.string(),
+    summary: v.string(), // Executive summary
+    highlights: v.array(v.object({
+      title: v.string(),
+      insight: v.string(),
+      url: v.optional(v.string()),
+      relevance: v.union(v.literal("high"), v.literal("medium"), v.literal("low")),
+    })),
+    topInsights: v.array(v.string()), // Key takeaways
+    saasIdeas: v.optional(v.array(v.object({
+      idea: v.string(),
+      painPoint: v.string(),
+      opportunity: v.string(),
+    }))),
+    itemIds: v.array(v.id("intelItems")), // Source items
+    generatedAt: v.number(),
+    read: v.boolean(),
+  }).index("by_date", ["date"]),
+
+  // Research requests (Ask Scout)
+  intelResearch: defineTable({
+    query: v.string(),
+    status: v.union(v.literal("pending"), v.literal("researching"), v.literal("completed"), v.literal("failed")),
+    results: v.optional(v.array(v.object({
+      title: v.string(),
+      url: v.string(),
+      snippet: v.string(),
+    }))),
+    summary: v.optional(v.string()), // Scout's summary
+    insights: v.optional(v.array(v.string())),
+    requestedAt: v.number(),
+    completedAt: v.optional(v.number()),
+  }).index("by_status", ["status"]),
 });
