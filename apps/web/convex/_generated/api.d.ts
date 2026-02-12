@@ -11,6 +11,7 @@
 import type * as activity from "../activity.js";
 import type * as agents from "../agents.js";
 import type * as http from "../http.js";
+import type * as intel from "../intel.js";
 import type * as seed from "../seed.js";
 import type * as tasks from "../tasks.js";
 
@@ -24,6 +25,7 @@ declare const fullApi: ApiFromModules<{
   activity: typeof activity;
   agents: typeof agents;
   http: typeof http;
+  intel: typeof intel;
   seed: typeof seed;
   tasks: typeof tasks;
 }>;

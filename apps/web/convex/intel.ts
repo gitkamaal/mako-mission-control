@@ -36,15 +36,24 @@ export const listItems = query({
     limit: v.optional(v.number()),
   },
   handler: async (ctx, { topicId, savedOnly, limit = 20 }) => {
-    let q = ctx.db.query("intelItems");
-    
     if (savedOnly) {
-      q = q.withIndex("by_saved", (q) => q.eq("saved", true));
+      return await ctx.db
+        .query("intelItems")
+        .withIndex("by_saved", (q) => q.eq("saved", true))
+        .order("desc")
+        .take(limit);
     } else if (topicId) {
-      q = q.withIndex("by_topic", (q) => q.eq("topicId", topicId));
+      return await ctx.db
+        .query("intelItems")
+        .withIndex("by_topic", (q) => q.eq("topicId", topicId))
+        .order("desc")
+        .take(limit);
     }
     
-    return await q.order("desc").take(limit);
+    return await ctx.db
+      .query("intelItems")
+      .order("desc")
+      .take(limit);
   },
 });
 
