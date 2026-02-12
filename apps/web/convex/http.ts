@@ -200,4 +200,95 @@ http.route({
   }),
 });
 
+// ==========================================
+// INTEL ENDPOINTS
+// ==========================================
+
+http.route({
+  path: "/api/intel/topics",
+  method: "OPTIONS",
+  handler: httpAction(async () => new Response(null, { headers: corsHeaders })),
+});
+
+http.route({
+  path: "/api/intel/items",
+  method: "OPTIONS",
+  handler: httpAction(async () => new Response(null, { headers: corsHeaders })),
+});
+
+http.route({
+  path: "/api/intel/digest",
+  method: "OPTIONS",
+  handler: httpAction(async () => new Response(null, { headers: corsHeaders })),
+});
+
+// GET /api/intel/topics - Get all intel topics
+http.route({
+  path: "/api/intel/topics",
+  method: "GET",
+  handler: httpAction(async (ctx) => {
+    const topics = await ctx.runQuery(api.intel.listTopics);
+    return jsonResponse(topics);
+  }),
+});
+
+// POST /api/intel/items - Add intel item (Scout posts findings here)
+http.route({
+  path: "/api/intel/items",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    try {
+      const body = await request.json();
+      const itemId = await ctx.runMutation(api.intel.addItem, {
+        title: body.title,
+        url: body.url,
+        source: body.source || "Web",
+        sourceIcon: body.sourceIcon || "🌐",
+        summary: body.summary,
+        relevance: body.relevance || "medium",
+        topicId: body.topicId,
+        tags: body.tags || [],
+        publishedAt: body.publishedAt,
+        aiInsights: body.aiInsights,
+      });
+      return jsonResponse({ success: true, itemId }, 201);
+    } catch (error) {
+      return jsonResponse({ error: String(error) }, 400);
+    }
+  }),
+});
+
+// POST /api/intel/digest - Create a digest (Scout posts compiled digest)
+http.route({
+  path: "/api/intel/digest",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    try {
+      const body = await request.json();
+      const digestId = await ctx.runMutation(api.intel.createDigest, {
+        date: body.date || new Date().toISOString().split("T")[0],
+        title: body.title,
+        summary: body.summary,
+        highlights: body.highlights || [],
+        topInsights: body.topInsights || [],
+        saasIdeas: body.saasIdeas,
+        itemIds: body.itemIds || [],
+      });
+      return jsonResponse({ success: true, digestId }, 201);
+    } catch (error) {
+      return jsonResponse({ error: String(error) }, 400);
+    }
+  }),
+});
+
+// GET /api/intel/digest/latest - Get latest digest
+http.route({
+  path: "/api/intel/digest/latest",
+  method: "GET",
+  handler: httpAction(async (ctx) => {
+    const digest = await ctx.runQuery(api.intel.getLatestDigest);
+    return jsonResponse(digest);
+  }),
+});
+
 export default http;
